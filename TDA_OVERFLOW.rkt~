@@ -23,10 +23,8 @@
   ;LISTA X LISTAS
   (list (list "juan01" "clave123")(list "diego02" "clave123"))
   ;1
-  ;Penultimo reward
-  ;ultimo estado de pregunta
   ;TDA PREGUNTA 1/0 es respondida o no.
-  (list (list 1 "pregunta" "juan01" (list "etiquetas" "C" "universidad") "10/12/2020" 0 1 ))
+  (list (list 1 "pregunta" "juan01" (list "etiquetas" "C" "universidad") "10/12/2020" 1 ))
   ;2
   ;TDA Respuestas
   (list (list 1 (list "diego02" "12/12/2020"  "respuesta" (list "etiquetas" "c"))))
@@ -58,28 +56,6 @@
 
 (define (deslogear stack)
   (cambiarDato stack 3(list)))
-
-
-(define existePreguntaID?(lambda(lista id)
-                            (cond
-                              ;Hasta que llege a ser nulo
-                              [( null? lista) #f]
-                              ;Si no es nulo sigo buscando el ultimo elemento (null) de la lista
-                              [(equal? (car(car lista)) id) #t ]
-                              [else(existePreguntaID? (cdr lista) id)])))
-
-(define asignarRewardPreguntaID(lambda (lista id reward stack i)
-                            (cond
-                              ;Hasta que llege a ser nulo
-                              [( null? lista) #f]
-                              ;Si no es nulo sigo buscando el ultimo elemento (null) de la lista
-                              [(equal? (car(car lista)) id) (cambiarDato stack 1
-                              (cambiarDato (GetListaDePreguntas stack) i (asignarReward (car lista) reward)) ) ]
-                              [else(asignarRewardPreguntaID (cdr lista) id reward stack (+ i 1))])
-                            ))
-;modificador reward dado una pregunta
-(define asignarReward (lambda (pregunta reward)
-                        (cambiarDato pregunta 5 reward)))
 
 
 ;REGISTER
@@ -119,8 +95,6 @@
                               ;Si no es nulo añado uno más a la cuenta del longitud y sigo buscando el ultimo elemento (null) de la lista
                               [(equal? (car(car lista)) user) (equal? (car(cdr(car lista))) password)]
                               [else(buscadorNameUser (cdr lista) user)])))
-
-
 ;ask
 ;recorrido :list ->stack X date X string X string list
 ; Ejemplo :  (((login stackoverflow "juan01" "clave123" ask)(date))"question?" "C#")
@@ -136,9 +110,10 @@
                   (list .labels) date 0
                   ) ))
                  "No hay usario logeado \n"))))
-           
+               
 
-;LOGIN que es como un main
+
+;LOGIN
 ;Ejemplo : (login stackoverflow "juan01" "pass" ask)
 ;Ejemplo : (login stackoverflow "juan01" "clave123" ask)
 (define login (lambda (stack username password operation)
@@ -149,9 +124,6 @@
                              ;ask
                              [(equal? operation ask)
                               (ask (logear stack username password))]
-                             ;reward
-                             [(equal? operation reward)
-                              (reward (logear stack username password))]
                              [else
                               (display "Comando Invalido\n")])
                            "Contraseña incorrecta\n"
@@ -160,12 +132,3 @@
                         )
                     "Datos entregados erroneos"
                     )))
-
-
-;REWARD
-;(((login stackoverflow "juan01" "clave123" reward) 1) 300)
-(define (reward stack)(lambda(id)
-                 (lambda (reward)
-                   (if (existePreguntaID? (GetListaDePreguntas stack) id)                             
-                       (asignarRewardPreguntaID (GetListaDePreguntas stack) id reward stack 0)
-                       "No existen preguntas"))))
