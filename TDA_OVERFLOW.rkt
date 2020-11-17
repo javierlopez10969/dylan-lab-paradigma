@@ -68,6 +68,19 @@
                               [(equal? (car(car lista)) id) #t ]
                               [else(existePreguntaID? (cdr lista) id)])))
 
+;Get indice de pregunta en una lista de respuestas
+; EJEMPLO : (getIndicePreguntaID (GetListaDeRespuestas stackoverflow) 1)
+(define getIndicePreguntaID (lambda(lista id)
+                (define buscar (lambda(lista id i)
+                            (cond
+                              ;Hasta que llege a ser nulo
+                              [( null? lista) #f]
+                              ;Si no es nulo sigo buscando el ultimo elemento (null) de la lista
+                              [(equal? (car(car lista)) id) i ]
+                              ;Caso recursivo
+                              [else(buscar (cdr lista) id (+ i 1))])))
+               (buscar lista id 0)))
+
 (define asignarRewardPreguntaID(lambda (lista id reward stack i)
                             (cond
                               ;Hasta que llege a ser nulo
@@ -81,9 +94,19 @@
 (define asignarReward (lambda (pregunta reward)
                         (cambiarDato pregunta 5 reward)))
 
+;Responder pregunta segun el id
+(define responderPreguntaID (lambda (stack listaRespuestas id respuesta date etiquetas)
+                              
+                               ;caso de que la lista de respeustas a la pregunta este vacía o no exista la respuesta aún
+                               (if (or (null? listaRespuestas) (equal? (getIndicePreguntaID listaRespuestas id) #f))
+                                   (cambiarDato stack 2
+                                    (añadirDato listaRespuestas (list id (list (GetUsuarioLogeado stack) date respuesta etiquetas))))
+                                   ;Caso de que si hayan respuestas
+                                   (cambiarDato stack 2
+                                   (cambiarDato listaRespuestas (getIndicePreguntaID listaRespuestas id)
+                                    (añadirDato (selectorDato listaRespuestas (getIndicePreguntaID listaRespuestas id)) (list (GetUsuarioLogeado stack) date respuesta etiquetas)))))))
 
 ;REGISTER
-
 ;Funcion register
 ;Ejemplo: (register stackoverflow "user01" "pass01")
 ;Ejemplo: (register stackoverflow "juan01" "pass01")
@@ -120,22 +143,6 @@
                               [(equal? (car(car lista)) user) (equal? (car(cdr(car lista))) password)]
                               [else(buscadorNameUser (cdr lista) user)])))
 
-
-;ask
-;recorrido :list ->stack X date X string X string list
-; Ejemplo :  (((login stackoverflow "juan01" "clave123" ask)(date))"question?" "C#")
-; Ejemplo : (((login stackoverflow "juan01" "clave123" ask)(fecha 1 2 3))"question?" "C#")
-
-(define (ask stack)(lambda (date)
-               (lambda (question .labels)
-                 (if (not (null? (GetActiveUsuario stack)))
-                 (cambiarDato stack 1 (añadirDato
-                  (GetListaDePreguntas stack)
-                  (list (+ (length (GetListaDePreguntas stack)) 1)
-                  question (GetUsuarioLogeado stack)
-                  (list .labels) date 0
-                  ) ))
-                 "No hay usario logeado \n"))))
            
 
 ;LOGIN que es como un main
@@ -152,6 +159,9 @@
                              ;reward
                              [(equal? operation reward)
                               (reward (logear stack username password))]
+                             ;answer
+                             [(equal? operation answer)
+                              (answer (logear stack username password))]
                              [else
                               (display "Comando Invalido\n")])
                            "Contraseña incorrecta\n"
@@ -160,12 +170,35 @@
                         )
                     "Datos entregados erroneos"
                     )))
+;ask
+;recorrido :list ->stack X date X string X string list
+; Ejemplo :  (((login stackoverflow "juan01" "clave123" ask)(date))"question?" "C#")
+; Ejemplo : (((login stackoverflow "juan01" "clave123" ask)(fecha 1 2 3))"question?" "C#")
 
+(define (ask stack)(lambda (date)
+               (lambda (question .labels)
+                 (if (not (null? (GetActiveUsuario stack)))
+                 (deslogear (cambiarDato stack 1 (añadirDato
+                  (GetListaDePreguntas stack)
+                  (list (+ (length (GetListaDePreguntas stack)) 1)
+                  question (GetUsuarioLogeado stack)
+                  (list .labels) date 0
+                  ) )))
+                 "No hay usario logeado \n"))))
 
 ;REWARD
 ;(((login stackoverflow "juan01" "clave123" reward) 1) 300)
 (define (reward stack)(lambda(id)
                  (lambda (reward)
                    (if (existePreguntaID? (GetListaDePreguntas stack) id)                             
-                       (asignarRewardPreguntaID (GetListaDePreguntas stack) id reward stack 0)
+                       (deslogear (asignarRewardPreguntaID (GetListaDePreguntas stack) id reward stack 0))
                        "No existen preguntas"))))
+
+;ANSWER
+;EJEMPLO : ((((login stackoverflow "juan01" "clave123" answer) (date)) 1) "mi respuesta" "C")
+(define (answer stack)(lambda (date)
+                        (lambda(id)
+                          (lambda (answer .labels)
+                            (if (existePreguntaID? (GetListaDePreguntas stack) id)
+                                (deslogear (responderPreguntaID stack (GetListaDeRespuestas stack) id answer date (list .labels)))
+                                "No existe pregunta con tal ID")))))

@@ -96,9 +96,9 @@
 ;Recorrido : String
 (define tiempo->string
   (lambda (listaTiempo)
-    (string-append (~v (selectorDato listaTiempo 2))":"
+    (string-append (~v (selectorDato listaTiempo 0))":"
                    (~v (selectorDato listaTiempo 1))":"
-                   (~v (selectorDato listaTiempo 0))" "
+                   (~v (selectorDato listaTiempo 2))" "
                    (~v (selectorDato listaTiempo 3))"/"
                    (~v (selectorDato listaTiempo 4))"/"
                    (~v (selectorDato listaTiempo 5))"\n")))
