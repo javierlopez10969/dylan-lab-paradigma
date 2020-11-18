@@ -1,18 +1,9 @@
 #lang racket
 (require "funciones.rkt")
 (require "TDAFecha.rkt")
-;EJEMPLO 2
-;sin usuarios.
-(define stackoverflow2
-  (list
-   ;0 tiene todos los usuarios y contraseñas
-   (list  )
-   )
-)
-;EJemplo de stack 
-;EJEMPLO 1
-;con 1 usuario
+
 ;TDA stackoverflow
+;LISTA X LISTAS
 (define stackoverflow
   (list
   ;0
@@ -21,22 +12,18 @@
   ;LISTA
   ;TDA base de datos de usuarios y contraseñas
   ;LISTA X LISTAS
-  (list (list "juan01" "clave123" 0)(list "diego02" "clave123" 0))
+  (list )
   ;1
-  ;Penultimo reward
-  ;ultimo estado de pregunta
-  ;TDA PREGUNTA 1/0 es respondida o no.
-  (list (list 1 "pregunta" "juan01" (list "etiquetas" "C" "universidad") "10/12/2020" 0 1 ))
+  ;ultimo dato que se agregara a esta lista es el reward
+  (list )
   ;2
   ;TDA Respuestas
-  (list (list 1 (list 1 "diego02" "12/12/2020"  "respuesta" (list "etiquetas" "c"))))
+  (list )
   ;3
   ;Sección de usario con sesión abierta
-  (list)
+  (list )
   )
 )
-;Constructor
-(define construirStack (lambda () (list (list) (list) (list) (list))))
 ;Pertenencia de stackoverflow.
 ;Ejemplo:(esStackoverflow? stackoverflow)
 (define (esStackoverflow? stackoverflow)
@@ -47,8 +34,7 @@
   #f
   )
 )
-
-;selectores
+;selectores de stackoverflow
 (define (GetListaDeUsuarios stack) (selectorDato stack 0))
 (define (GetListaDePreguntas stack) (selectorDato stack 1))
 (define (GetListaDeRespuestas stack) (selectorDato stack 2))
@@ -99,7 +85,6 @@
 ;(asignarRewardUsuario stackoverflow "juan01" 100)
 (define asignarRewardUsuario (lambda (stack usuario reward)
                                (cambiarDato stack 0 (cambiarDato (GetListaDeUsuarios stack) (getIndiceUsuario stack usuario) (cambiarDato (selectorDato (GetListaDeUsuarios stack) (getIndiceUsuario stack usuario)) 2 reward ))) ))
-
 
 
 (define preguntaCorresponde?
@@ -176,7 +161,7 @@
                   (if (and (esStackoverflow? stackoverflow)(string? user)(string? pass))
                       (if (existNameUser? stackoverflow user)
                       "Ya existe este nombre de usuario\n"
-                      (cambiarDato stackoverflow 0 (añadirDato(selectorDato stackoverflow 0)(list user pass))))
+                      (cambiarDato stackoverflow 0 (añadirDato(selectorDato stackoverflow 0)(list user pass 0))))
                       "No corresponden a usuario y pass\n"
                   )
                )
